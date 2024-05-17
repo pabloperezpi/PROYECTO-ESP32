@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de luces LED</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Control de luces LED</h1>
+        <div>
+            <h2>Encender / Apagar</h2>
+            <button id="toggleButton" class="btn">Encender</button>
+        </div>
+        <div>
+            <h2>Paleta de colores</h2>
+            <div class="color-palette">
+                <div class="color-box" style="background-color: #ff0000;"></div>
+                <div class="color-box" style="background-color: #ff8000;"></div>
+                <div class="color-box" style="background-color: #ffff00;"></div>
+                <div class="color-box" style="background-color: #80ff00;"></div>
+                <div class="color-box" style="background-color: #00ff00;"></div>
+                <div class="color-box" style="background-color: #00ff80;"></div>
+                <div class="color-box" style="background-color: #00ffff;"></div>
+                <div class="color-box" style="background-color: #0080ff;"></div>
+                <div class="color-box" style="background-color: #0000ff;"></div>
+                <div class="color-box" style="background-color: #8000ff;"></div>
+                <div class="color-box" style="background-color: #ff00ff;"></div>
+                <div class="color-box" style="background-color: #ff0080;"></div>
+                <!-- Agrega más colores según sea necesario -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const toggleButton = document.getElementById('toggleButton');
+        const colorBoxes = document.querySelectorAll('.color-box');
+
+        let isOn = false;
+
+        toggleButton.addEventListener('click', () => {
+            isOn = !isOn;
+            if (isOn) {
+                toggleButton.textContent = 'Apagar';
+                // Aquí deberías enviar una solicitud al ESP32 para encender la luz LED
+            } else {
+                toggleButton.textContent = 'Encender';
+                // Aquí deberías enviar una solicitud al ESP32 para apagar la luz LED
+            }
+        });
+
+        colorBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                const color = box.style.backgroundColor;
+                // Aquí deberías enviar una solicitud al ESP32 para cambiar el color de la luz LED
+            });
+        });
+    </script>
+</body>
+</html>
+
