@@ -2,11 +2,11 @@
 #include <WebServer.h>
 #include <Adafruit_NeoPixel.h> // controlar tiras led NeoPixel
 
-#define NUM_LEDS 50 // Número de LEDs tira LED
-#define MIC_PIN A0   // Pin  micrófono
-#define LED_PIN 27  // Pin  tira LED
+#define NUM_LEDS 50 // Número de LEDs en la tira LED
+#define MIC_PIN A0   // Pin del micrófono
+#define LED_PIN 27  // Pin de la tira LED
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800); // creamos el objeto de tira led "strip"
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800); // Creamos el objeto de la tira LED "strip"
 
 const char* ssid = "iPhone de Pablo";
 const char* password = "pabloperez";
@@ -25,7 +25,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(MIC_PIN, INPUT);
   strip.begin();
-  strip.show(); // mostramos el estado actual de la tira
+  strip.show(); // Mostramos el estado actual de la tira
 
   Serial.println("Intentando conectar a ");
   Serial.println(ssid);
@@ -54,19 +54,35 @@ void setup() {
 void loop() {
   server.handleClient();
 
-  // Leer los niveles de decibelios del micrófono
-  int dB = analogRead(MIC_PIN);
+  if (isOn) {
+    // Leer los niveles de decibelios del micrófono
+    int dB = analogRead(MIC_PIN);
 
-  // Ajustar la intensidad de la tira LED basada en los niveles de decibelios
-  int brightness = map(dB, 0, 1023, 0, 255); // map(valor, valorMinimoEntrada, valorMaximoEntrada, valorMinimoSalida, valorMaximoSalida);
-  strip.setBrightness(brightness);
+    // Ajustar la intensidad de la tira LED basada en los niveles de decibelios
+    int brightness = map(dB, 0, 1023, 0, 255); // map(valor, valorMinimoEntrada, valorMaximoEntrada, valorMinimoSalida, valorMaximoSalida);
+    strip.setBrightness(brightness);
 
-  // Actualizar la tira LED
-  strip.show();
+    // Aplicar el color seleccionado
+    uint32_t color = parseColor(selectedColor);
+    for (int i = 0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, color);
+    }
+
+    // Actualizar la tira LED
+    strip.show();
+  } else {
+    strip.clear();
+    strip.show();
+  }
 
   delay(100); // Ajusta el intervalo según sea necesario para tu aplicación
 }
 
+uint32_t parseColor(String color) {
+  color.remove(0, 1); // Quitar el '#'
+  long number = strtol(color.c_str(), NULL, 16);
+  return strip.Color((number >> 16) & 0xFF, (number >> 8) & 0xFF, number & 0xFF);
+}
 
 String HTML = R"=====(
 <!DOCTYPE html>
@@ -155,13 +171,13 @@ String HTML = R"=====(
     </div>
 
     <script>
+        let isOn = false;
         const toggleButton = document.getElementById('toggleButton');
         const colorBoxes = document.querySelectorAll('.color-box');
 
         toggleButton.addEventListener('click', () => {
-            const newState = !isOn;
-            sendToggleRequest(newState);
-            isOn = newState;
+            isOn = !isOn;
+            sendToggleRequest(isOn);
             toggleButton.textContent = isOn ? 'Apagar' : 'Encender';
         });
 
@@ -201,10 +217,10 @@ void handleRoot() {
 void handleToggle() {
   String state = server.arg("state");
   if (state == "on") {
-    // Aquí deberías enviar una señal para encender las luces LED
+    isOn = true;
     Serial.println("Luces LED encendidas");
   } else if (state == "off") {
-    // Aquí deberías enviar una señal para apagar las luces LED
+    isOn = false;
     Serial.println("Luces LED apagadas");
   }
   server.send(200, "application/json", "{\"message\":\"Toggle command received\"}");
@@ -213,7 +229,6 @@ void handleToggle() {
 // Manejar la solicitud para cambiar el color de las luces LED
 void handleColor() {
   String colorValue = server.arg("value");
-  // Aquí deberías enviar una señal para cambiar el color de las luces LED
   selectedColor = colorValue;
   Serial.print("Color seleccionado: ");
   Serial.println(selectedColor);
