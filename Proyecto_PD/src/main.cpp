@@ -1,5 +1,12 @@
 #include <WiFi.h>
 #include <WebServer.h>
+#include <Adafruit_NeoPixel.h> // controlar tiras led NeoPixel
+
+#define NUM_LEDS 50 // Número de LEDs tira LED
+#define MIC_PIN A0   // Pin  micrófono
+#define LED_PIN 27  // Pin  tira LED
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800); // creamos el objeto de tira led "strip"
 
 const char* ssid = "iPhone de Pablo";
 const char* password = "pabloperez";
@@ -16,6 +23,10 @@ String selectedColor = "#ff0000"; // Color por defecto
 
 void setup() {
   Serial.begin(115200);
+  pinMode(MIC_PIN, INPUT);
+  strip.begin();
+  strip.show(); // mostramos el estado actual de la tira
+
   Serial.println("Intentando conectar a ");
   Serial.println(ssid);
 
@@ -42,129 +53,144 @@ void setup() {
 
 void loop() {
   server.handleClient();
+
+  // Leer los niveles de decibelios del micrófono
+  int dB = analogRead(MIC_PIN);
+
+  // Ajustar la intensidad de la tira LED basada en los niveles de decibelios
+  int brightness = map(dB, 0, 1023, 0, 255); // map(valor, valorMinimoEntrada, valorMaximoEntrada, valorMinimoSalida, valorMaximoSalida);
+  strip.setBrightness(brightness);
+
+  // Actualizar la tira LED
+  strip.show();
+
+  delay(100); // Ajusta el intervalo según sea necesario para tu aplicación
 }
 
-String HTML = "<!DOCTYPE html>\
-<html lang=\"es\">\
-<head>\
-    <meta charset=\"UTF-8\">\
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\
-    <title>Control de luces LED</title>\
-    <style>\
-        body {\
-            font-family: Arial, sans-serif;\
-            background-color: #f0f0f0;\
-            margin: 0;\
-            padding: 0;\
-            display: flex;\
-            justify-content: center;\
-            align-items: center;\
-            height: 100vh;\
-        }\
-\
-        .container {\
-            text-align: center;\
-            background-color: #fff;\
-            padding: 20px;\
-            border-radius: 10px;\
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\
-        }\
-\
-        .btn {\
-            display: inline-block;\
-            padding: 10px 20px;\
-            font-size: 16px;\
-            background-color: #007bff;\
-            color: #fff;\
-            border: none;\
-            border-radius: 5px;\
-            cursor: pointer;\
-            transition: background-color 0.3s ease;\
-        }\
-\
-        .btn:hover {\
-            background-color: #0056b3;\
-        }\
-\
-        .color-palette {\
-            display: flex;\
-            flex-wrap: wrap;\
-            justify-content: center;\
-            gap: 5px;\
-            margin-top: 20px;\
-        }\
-\
-        .color-box {\
-            width: 50px;\
-            height: 50px;\
-            border-radius: 50%;\
-            cursor: pointer;\
-        }\
-    </style>\
-</head>\
-<body>\
-    <div class=\"container\">\
-        <h1>Control de luces LED</h1>\
-        <div>\
-            <h2>Encender / Apagar</h2>\
-            <button id=\"toggleButton\" class=\"btn\">Encender</button>\
-        </div>\
-        <div>\
-            <h2>Paleta de colores</h2>\
-            <div class=\"color-palette\">\
-                <div class=\"color-box\" style=\"background-color: #ff0000;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #ff8000;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #ffff00;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #80ff00;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #00ff00;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #00ff80;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #00ffff;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #0080ff;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #0000ff;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #8000ff;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #ff00ff;\"></div>\
-                <div class=\"color-box\" style=\"background-color: #ff0080;\"></div>\
-                <!-- Agrega más colores según sea necesario -->\
-            </div>\
-        </div>\
-    </div>\
-\
-    <script>\
-        const toggleButton = document.getElementById('toggleButton');\
-        const colorBoxes = document.querySelectorAll('.color-box');\
-\
-        toggleButton.addEventListener('click', () => {\
-            const newState = !isOn;\
-            sendToggleRequest(newState);\
-            isOn = newState;\
-            toggleButton.textContent = isOn ? 'Apagar' : 'Encender';\
-        });\
-\
-        colorBoxes.forEach(box => {\
-            box.addEventListener('click', () => {\
-                const color = box.style.backgroundColor;\
-                sendColorRequest(color);\
-            });\
-        });\
-\
-        function sendToggleRequest(state) {\
-            const url = '/toggle?state=' + (state ? 'on' : 'off');\
-            fetch(url)\
-                .then(response => response.json())\
-                .then(data => console.log(data))\
-                .catch(error => console.error('Error:', error));\
-        }\
-\
-        function sendColorRequest(color) {\
-            const url = '/color?value=' + encodeURIComponent(color);\
-            fetch(url)\
-                .then(response => response.json())\
-                .then(data => console.log(data))\
-                .catch(error => console.error('Error:', error));\
-        }\
-    </script>\
-</body>\
-</html>";
+
+String HTML = R"=====(
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de luces LED</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Control de luces LED</h1>
+        <div>
+            <h2>Encender / Apagar</h2>
+            <button id="toggleButton" class="btn">Encender</button>
+        </div>
+        <div>
+            <h2>Paleta de colores</h2>
+            <div class="color-palette">
+                <div class="color-box" style="background-color: #ff0000;"></div>
+                <div class="color-box" style="background-color: #ff8000;"></div>
+                <div class="color-box" style="background-color: #ffff00;"></div>
+                <div class="color-box" style="background-color: #80ff00;"></div>
+                <div class="color-box" style="background-color: #00ff00;"></div>
+                <div class="color-box" style="background-color: #00ff80;"></div>
+                <div class="color-box" style="background-color: #00ffff;"></div>
+                <div class="color-box" style="background-color: #0080ff;"></div>
+                <div class="color-box" style="background-color: #0000ff;"></div>
+                <div class="color-box" style="background-color: #8000ff;"></div>
+                <div class="color-box" style="background-color: #ff00ff;"></div>
+                <div class="color-box" style="background-color: #ff0080;"></div>
+                <!-- Agrega más colores según sea necesario -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const toggleButton = document.getElementById('toggleButton');
+        const colorBoxes = document.querySelectorAll('.color-box');
+
+        toggleButton.addEventListener('click', () => {
+            const newState = !isOn;
+            sendToggleRequest(newState);
+            isOn = newState;
+            toggleButton.textContent = isOn ? 'Apagar' : 'Encender';
+        });
+
+        colorBoxes.forEach(box => {
+            box.addEventListener('click', () => {
+                const color = box.style.backgroundColor;
+                sendColorRequest(color);
+            });
+        });
+
+        function sendToggleRequest(state) {
+            const url = '/toggle?state=' + (state ? 'on' : 'off');
+            fetch(url)
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function sendColorRequest(color) {
+            const url = '/color?value=' + encodeURIComponent(color);
+            fetch(url)
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
+)=====";
 
 // Manejar la ruta raíz (/)
 void handleRoot() {
