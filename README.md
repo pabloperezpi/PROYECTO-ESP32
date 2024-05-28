@@ -1,7 +1,8 @@
 # Proyecto de Procesadores digitales:
 ## Pablo Pérez y Eric Ayala
-# Código de Control de Luces LED con ESP32
+---
 
+# Código de Control de Luces LED con ESP32
 ## Descripción General
 
 Este código está diseñado para controlar una tira de LEDs NeoPixel utilizando un ESP32. Permite a los usuarios encender y apagar las luces, cambiar el color, ajustar el brillo y seleccionar diferentes modos de iluminación a través de una interfaz web. Además, incluye la capacidad de ajustar el brillo de los LEDs en función del sonido ambiental detectado por un micrófono.
