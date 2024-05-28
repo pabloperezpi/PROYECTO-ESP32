@@ -406,7 +406,8 @@ graph TD
     X --> Y
     Y --> Z[Delay 100 ms]
     Z --> H
-    
+   ````
+``` mermaid 
     subgraph Server Handlers
         A1[handleRoot] --> A2[Send HTML]
         B1[handleToggle] --> B2[Toggle Lights]
