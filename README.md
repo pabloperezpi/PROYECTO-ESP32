@@ -1,4 +1,6 @@
-# Informe del Código de Control de Luces LED con ESP32
+# Proyecto de Procesadores digitales:
+## Pablo Pérez y Eric Ayala
+## Código de Control de Luces LED con ESP32
 
 ## Descripción General
 
