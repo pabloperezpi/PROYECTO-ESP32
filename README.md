@@ -1,6 +1,6 @@
 # Proyecto de Procesadores digitales:
 ## Pablo Pérez y Eric Ayala
-## Código de Control de Luces LED con ESP32
+# Código de Control de Luces LED con ESP32
 
 ## Descripción General
 
