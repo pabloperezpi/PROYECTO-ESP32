@@ -134,7 +134,7 @@ void loop() {
     strip.show();
   }
 
-  delay(100);
+  delay(10);
 }
 
 uint32_t parseColor(String color) {
@@ -192,7 +192,7 @@ void showWave() {
 void showBreathing() {
   static int breatheStep = 0;
   static int direction = 1; // 1: increasing brightness, -1: decreasing brightness
-  int breatheSpeed = 5; // Adjust this value to change breathing speed
+  int breatheSpeed = 7; // Adjust this value to change breathing speed
 
   breatheStep += direction * breatheSpeed;
   if (breatheStep >= 255 || breatheStep <= 0) {
@@ -350,6 +350,13 @@ String HTML = R"=====(
         </div>
     </div>
     <script>
+        const brightnessValues = [0, 36, 72, 109, 145, 182, 218, 255];
+        const speedValues = [50, 188, 325, 463, 600, 738, 875, 1000];
+
+        function closestValue(value, valuesArray) {
+            return valuesArray.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+        }
+
         document.getElementById('toggleBtn').addEventListener('click', function () {
             fetch('/toggle').then(response => response.text()).then(data => {
                 this.textContent = (this.textContent === 'Encender') ? 'Apagar' : 'Encender';
@@ -362,8 +369,10 @@ String HTML = R"=====(
             });
         });
 
-        document.getElementById('brightness').addEventListener('input', function () {
-            fetch(`/brightness?value=${this.value}`);
+        document.getElementById('brightness').addEventListener('change', function () {
+            let closest = closestValue(this.value, brightnessValues);
+            this.value = closest;
+            fetch(`/brightness?value=${closest}`);
         });
 
         const speedSection = document.getElementById('speedSection');
@@ -405,12 +414,15 @@ String HTML = R"=====(
             fetch('/waveControl');
         });
 
-        document.getElementById('speed').addEventListener('input', function () {
-            fetch(`/speed?value=${this.value}`);
+        document.getElementById('speed').addEventListener('change', function () {
+            let closest = closestValue(this.value, speedValues);
+            this.value = closest;
+            fetch(`/speed?value=${closest}`);
         });
     </script>
 </body>
 </html>
+
 )=====";
 
 
